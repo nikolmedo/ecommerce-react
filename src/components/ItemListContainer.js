@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import ItemDetailContainer from './ItemDetailContainer';
+// import { Spinner } from 'react-bootstrap';
 import ItemList from './ItemList';
 
 function ItemListContainer({ title }) {
+  const { idCategory } = useParams();
+  console.log(idCategory);
+  useEffect(() => {
+    getItems().then( result => {
+      setProductos(result);
+    })
+  }, []);
   const [productos, setProductos] = useState();
-  const task = new Promise((res, rej) => {
+  const getItems = () => new Promise((res, rej) => {
       setTimeout(function(){
         const prod = [
           { id: 1, title: 'Prod 1', description: 'Prod 1 - des', price: 1500, stock: 12, pictureUrl: 'https://infoservice-cba.com.ar/wp-content/uploads/2019/07/Disco-Rigido-Solido-Ssd-A400-120gb-Kingston-Sata-Interno-7mm.jpg'},
@@ -13,13 +23,16 @@ function ItemListContainer({ title }) {
         res(prod);
       }, 3000);
   });
-  task.then( result => {
-    setProductos(result);
-  })
   return (
       <div className="container">
-          <h2>{title}</h2>
+        <div className="page-header">
+          <h1>
+            {title}
+          </h1>
+        </div>
+        <div className="row">
           <ItemList items={productos} />
+        </div>
       </div>
   );
 }
