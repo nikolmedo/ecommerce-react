@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ItemCount from './ItemCount';
 
 function ItemDetail({ item={} }) {
-    function add() {}
+    const [buying, setBuying] = useState(false);
+    const [quantity, setQuantity] = useState(0);
+    function add(data) {
+        setBuying(true);
+        setQuantity(data);
+    }
     return (
         <>
             <div className="card">
@@ -14,7 +20,10 @@ function ItemDetail({ item={} }) {
                         </div>
                         <div className="col-md-4">
                             <img className="img-fluid" src={ item.pictureUrl }/><br/>
-                            <ItemCount stock={ item.stock } initial="2" onAdd={add} />
+                            { !buying ? <ItemCount stock={ item.stock } initial="2" onAdd={add} /> : 
+                            <>
+                                <Link style={{textDecoration:"none"}} to={'/cart'}><button type="button" className="btn btn-success">Terminar compra</button></Link>
+                            </>}
                         </div>
                     </div>
                 </div>

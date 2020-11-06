@@ -10,9 +10,11 @@ function ItemListContainer({ title }) {
   useEffect(() => {
     getItems().then( result => {
       setProductos(result);
+      setShowLoading(false);
     })
   }, []);
   const [productos, setProductos] = useState();
+  const [showLoading, setShowLoading] = useState(true);
   const getItems = () => new Promise((res, rej) => {
       setTimeout(function(){
         const prod = [
@@ -31,7 +33,14 @@ function ItemListContainer({ title }) {
           </h1>
         </div>
         <div className="row">
-          <ItemList items={productos} />
+          { showLoading ? <>
+                    <div style={{ marginTop:"80px" }} className="spinner-grow text-primary" role="status" display={false}>
+                        <span className="sr-only">Loading...</span>
+                    </div>
+                </> : <>
+                  <ItemList items={productos} />
+                </>
+            }
         </div>
       </div>
   );

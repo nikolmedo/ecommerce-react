@@ -16,6 +16,10 @@ function ItemCount({ stock, initial, onAdd }) {
         }
     }
 
+    function buy() {
+        onAdd(current);
+    }
+
     return (
         <>
             <div className="border">
@@ -30,7 +34,7 @@ function ItemCount({ stock, initial, onAdd }) {
                 </svg>
             </div>
             <br/>
-            <button type="button" className="btn btn-success" onClick={onAdd}>Comprar</button>                
+            <button type="button" className="btn btn-success" onClick={buy}>Comprar</button>                
         </>
     );
 }

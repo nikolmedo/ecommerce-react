@@ -7,7 +7,7 @@ function Item({ item }) {
     return (
         <>
             <div className="col-md-4">
-                <Link to={'/item/' + item.id}>
+                <Link style={{textDecoration:"none"}} to={'/item/' + item.id}>
                     <div className="card" key={ item.id }>
                         <div className="card-header">
                             {/* <h5 className="card-title">{ item.title }</h5> */}
