@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import ItemDetailContainer from './ItemDetailContainer';
 // import { Spinner } from 'react-bootstrap';
 import ItemList from './ItemList';
+import Loader from './Loader';
 
 function ItemListContainer({ title }) {
   const { idCategory } = useParams();
@@ -26,23 +27,21 @@ function ItemListContainer({ title }) {
       }, 3000);
   });
   return (
-      <div className="container">
-        <div className="page-header">
-          <h1>
-            {title}
-          </h1>
-        </div>
-        <div className="row">
-          { showLoading ? <>
-                    <div style={{ marginTop:"80px" }} className="spinner-grow text-primary" role="status" display={false}>
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </> : <>
-                  <ItemList items={productos} />
-                </>
-            }
-        </div>
-      </div>
+      <>
+        <Loader isLoading={showLoading} />
+        { !showLoading ? 
+          <div className="container">
+            <div className="page-header">
+              <h1>
+                {title}
+              </h1>
+            </div>
+            <div className="row">
+                  <ItemList items={productos} /> 
+            </div>
+          </div> : ''
+        }
+      </>
   );
 }
 export default ItemListContainer;

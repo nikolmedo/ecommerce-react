@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ItemDetail from './ItemDetail';
+import Loader from './Loader';
 
 function ItemDetailContainer() {
     const [producto, setProducto] = useState();
@@ -24,15 +25,11 @@ function ItemDetailContainer() {
     });
     return (
         <>
-            { showLoading ? <>
-                    <div style={{ marginTop:"80px" }} className="spinner-grow text-primary" role="status" display={false}>
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </> : <>
-                    <div style={{ marginTop:"40px" }} className="container">
-                        <ItemDetail item={producto} />
-                    </div>
-                </>
+            <Loader isLoading={showLoading} />
+            { !showLoading ? 
+            <div style={{ marginTop:"40px" }} className="container">
+                <ItemDetail item={producto} />
+            </div> : ''
             }
         </>
     );
