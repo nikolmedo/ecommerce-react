@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useValueContext } from '../context/cartContext';
 
 function CartWidget() {
+    const { quantityItems } = useValueContext();
+    let hidden = quantityItems > 0 ? { display: 'block' } : { display: 'none' };
     return (
-        <Link to="/cart">
+        <Link to="/cart" style={hidden}>
             <ul className="navbar-nav ml-md-auto">
-                <li>
+                <li style={{ position: "relative" }}>
                     <span className="navbar-text">
                         <a className="nav-item nav-link mr-md-2" href="#cart">
                             <svg width="20px" height="20px" viewBox="0 0 16 16" className="bi bi-cart" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -13,6 +16,7 @@ function CartWidget() {
                             </svg>
                         </a>
                     </span>
+                    <span className="badge badge-light" style={{ fontSize: "60%", marginLeft: "-22px", marginTop: "17px", position: "fixed" }}>{quantityItems}</span>
                 </li>
             </ul>
         </Link>

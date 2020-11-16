@@ -6,8 +6,6 @@ import ItemList from './ItemList';
 import Loader from './Loader';
 
 function ItemListContainer({ title }) {
-  const { idCategory } = useParams();
-  console.log(idCategory);
   useEffect(() => {
     getItems().then( result => {
       setProductos(result);

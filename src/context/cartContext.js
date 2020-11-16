@@ -5,7 +5,8 @@ export const useValueContext = () => useContext(CartContext);
 
 
 export default function CartProvider({ children = [], defaultCart = [] }) {
-    const [cart, setCart] = useState(defaultCart); // [ item1, item2, item3 ]
+    const [cart, setCart] = useState(defaultCart);
+    const [quantityItems, setQuantityItems] = useState(0);
     // Nuestro almacen de estado de compra
     // Funciona como nuestra propia API
 
@@ -14,22 +15,29 @@ export default function CartProvider({ children = [], defaultCart = [] }) {
         // revisa si existe el producto
         let obj = cart.find(o => o.item.id === item.id);
         if (obj == undefined) {
+            setQuantityItems(Number(quantityItems) + Number(quantity));
             setCart([...cart, { item, quantity }]);
         }
-        console.log(cart);
     }
 
     function removeItem(itemId) {
         // Remueve un item por id y actualiza el estado
         var filteredArray = cart.filter(e => e.item.id !== itemId);
         setCart(filteredArray);
+        recalculate(filteredArray);
+    }
+
+    function recalculate(filteredArray) {
+        let quantity = 0;
+        filteredArray.map((item) => quantity += Number(item.quantity) );
+        setQuantityItems(Number(quantity));
     }
 
     function clearCart() {
         setCart([]);
     }
 
-    return <CartContext.Provider value={{ cart, addItem, removeItem, clearCart }}>
+    return <CartContext.Provider value={{ cart, quantityItems, addItem, removeItem, clearCart }}>
         {children}
     </CartContext.Provider>
 }
