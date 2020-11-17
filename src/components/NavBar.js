@@ -1,22 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getFirestore } from '../firebase';
 import CartWidget from './CartWidget';
-// import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
 
-// Usando REACT Bootstrap
-// <Navbar bg="primary" variant="dark">
-//     <Navbar.Brand href="#home">Ecommerce - ReactJS</Navbar.Brand>
-//     <Nav className="mr-auto">
-//         <Nav.Link href="#home">Home</Nav.Link>
-//         <NavDropdown title="Categorias" id="basic-nav-dropdown">
-//             <NavDropdown.Item href="#audiovideo">Audio y video</NavDropdown.Item>
-//             <NavDropdown.Item href="#computacion">Computación</NavDropdown.Item>
-//             <NavDropdown.Item href="#libreria">Libreria</NavDropdown.Item>
-//             <NavDropdown.Item href="#limpieza">Limpieza</NavDropdown.Item>
-//         </NavDropdown>
-//     </Nav>
-// </Navbar>
 function NavBar() {
+    useEffect(() => {
+        const db = getFirestore();
+        const categoryCollection = db.collection("category");
+        // const filterCollection = itemCollection.where("title", "==", "Prod 1")
+        //                                         .where("categoryId", "==", "asdasdasd");
+        // filterCollection.get().then((querySnapshot) => {
+        categoryCollection.get().then((querySnapshot) => {
+          if(querySnapshot.size === 0) {
+            console.log('No hay resultados');
+          }
+          setCategories(
+            querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+          )
+        });
+      }, []);
+      const [categories, setCategories] = useState([]);
+      
+      function getCategories() {
+        return categories.map((category) => <Link className="dropdown-item" to={ '/category/' + category.id }>{category.titulo}</Link>);
+      }
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <a className="navbar-brand" href="">Ecommerce - ReactJS</a>
@@ -34,10 +41,11 @@ function NavBar() {
                         Categorias
                         </a>
                         <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a className="dropdown-item" href="#audio">Audio y video</a>
+                            { getCategories() }
+                            {/* <a className="dropdown-item" href="#audio">Audio y video</a>
                             <a className="dropdown-item" href="#computacion">Computación</a>
                             <a className="dropdown-item" href="#libreria">Libreria</a>
-                            <a className="dropdown-item" href="#limpieza">Limpieza</a>
+                            <a className="dropdown-item" href="#limpieza">Limpieza</a> */}
                         </div>
                     </li>
                 </ul>
