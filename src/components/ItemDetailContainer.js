@@ -18,7 +18,7 @@ function ItemDetailContainer() {
         if(!querySnapshot.exists) {
           console.log('No results');
         } else {
-          setProducto(querySnapshot.data());
+          setProducto({id: querySnapshot.id, ...querySnapshot.data()});
         }
         setShowLoading(false);
       });
