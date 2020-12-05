@@ -14,7 +14,7 @@ export default function CartProvider({ children = [], defaultCart = [] }) {
     function addItem(item, quantity) {
         // revisa si existe el producto
         let obj = cart.find(o => o.item.id === item.id);
-        if (obj == undefined) {
+        if (obj === undefined) {
             setQuantityItems(Number(quantityItems) + Number(quantity));
             setCart([...cart, { item, quantity }]);
         }
@@ -35,6 +35,7 @@ export default function CartProvider({ children = [], defaultCart = [] }) {
 
     function clearCart() {
         setCart([]);
+        setQuantityItems(0);
     }
 
     return <CartContext.Provider value={{ cart, quantityItems, addItem, removeItem, clearCart }}>

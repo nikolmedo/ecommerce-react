@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getFirestore } from '../firebase';
 import ItemDetail from './ItemDetail';
 import Loader from './Loader';
+import NotFound from './NotFound';
 
 function ItemDetailContainer() {
     const [producto, setProducto] = useState();
@@ -17,6 +18,7 @@ function ItemDetailContainer() {
       itemCollection.get().then((querySnapshot) => {
         if(!querySnapshot.exists) {
           console.log('No results');
+          setProducto(null);
         } else {
           setProducto({id: querySnapshot.id, ...querySnapshot.data()});
         }
@@ -29,7 +31,7 @@ function ItemDetailContainer() {
             <Loader isLoading={showLoading} />
             { !showLoading ? 
             <div style={{ marginTop:"40px" }} className="container">
-                <ItemDetail item={producto} />
+                { producto !== null ? <ItemDetail item={producto} /> : <><NotFound error="El producto no existe" /></> }
             </div> : ''
             }
         </>

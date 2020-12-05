@@ -22,11 +22,11 @@ function NavBar() {
       const [categories, setCategories] = useState([]);
       
       function getCategories() {
-        return categories.map((category) => <Link className="dropdown-item" to={ '/category/' + category.id }>{category.titulo}</Link>);
+        return categories.map((category) => <Link key={ category.id } className="dropdown-item" to={ '/category/' + category.id }>{category.titulo}</Link>);
       }
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-            <a className="navbar-brand" href="">Ecommerce - ReactJS</a>
+            <Link className="navbar-brand" to="/">Ecommerce - ReactJS</Link>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"></span>
             </button>
@@ -37,15 +37,11 @@ function NavBar() {
                         <Link className="nav-link" to="/">Home <span className="sr-only">(current)</span></Link>
                     </li>
                     <li className="nav-item dropdown">
-                        <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Categorias
                         </a>
                         <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                             { getCategories() }
-                            {/* <a className="dropdown-item" href="#audio">Audio y video</a>
-                            <a className="dropdown-item" href="#computacion">Computación</a>
-                            <a className="dropdown-item" href="#libreria">Libreria</a>
-                            <a className="dropdown-item" href="#limpieza">Limpieza</a> */}
                         </div>
                     </li>
                 </ul>

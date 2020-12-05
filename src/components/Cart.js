@@ -6,6 +6,7 @@ import firebase from 'firebase/app';
 import Stepper from 'bs-stepper';
 import 'bs-stepper/dist/css/bs-stepper.min.css';
 import { useEffect } from 'react';
+import NotFound from './NotFound';
 
 function useTextInput({ defaultValue, extras }) {
     const [input, setInput] = useState(defaultValue);
@@ -29,7 +30,7 @@ function Cart() {
     const [finishOrder, setFinishOrder] = useState(false);
     const [orderId, setOrderId] = useState();
     let total = 0;
-    let newOrder = { buyer: {}, items: {}, total: 0, date: '', payment: {} };
+    let newOrder = { buyer: {}, items: {}, total: 0, date: '', payment: {}, estado: '' };
 
     // Formulario del comprador
     const nameInput = useTextInput({
@@ -40,13 +41,17 @@ function Cart() {
         defaultValue: "",
         extras: { placeholder: "Apellido" }
     });
+    const phoneInput = useTextInput({
+        defaultValue: "",
+        extras: { placeholder: "Teléfono" }
+    });
     const mailInput = useTextInput({
         defaultValue: "",
         extras: { placeholder: "Mail" }
     });
-    const phoneInput = useTextInput({
+    const mailConfirmInput = useTextInput({
         defaultValue: "",
-        extras: { placeholder: "Teléfono" }
+        extras: { placeholder: "Confirmar mail" }
     });
 
     // Formulario de la tarjeta
@@ -70,21 +75,23 @@ function Cart() {
         defaultValue: "",
         extras: { placeholder: "Documento" }
     });
-
+    
     useEffect(() => {
         if(cart.length !== 0 && !finishOrder) {
             let aux = new Stepper(document.querySelector('.bs-stepper'));
             setStepper(aux);
             aux.to(0);
         }
-    }, [cart]);
+    }, [cart, finishOrder]);
 
+    // Funcion que crea la orden en Firebase (paso final)
     async function createOrder() {
-        newOrder.items = cart.map((item) => ({ id: item.item.id, title: item.item.title, price: item.item.price, quantity: Number(item.quantity) }));
+        newOrder.items = cart.map((item) => ({ id: item.item.id, title: item.item.title, description: item.item.description, price: item.item.price, quantity: Number(item.quantity) }));
         newOrder.total = total;
         newOrder.payment = payment;
         newOrder.buyer = buyer;
         newOrder.date = firebase.firestore.FieldValue.serverTimestamp();
+        newOrder.estado = 'generada';
 
         const db = getFirestore();
         let orders = db.collection("orders");
@@ -96,20 +103,24 @@ function Cart() {
         console.log(id.id);
     }
 
+    // Avanzar visualmente el stepper
     function next() {
         stepper.next();
     }
 
+    // Setear datos del comprador y avanzar al siguiente paso
     function goToPayment() {
         setBuyer({ name: nameInput.value, last: lastInput.value, phone: phoneInput.value, email: mailInput.value });
         next();
     }
 
+    // Setear datos del pago y avanzar al paso final de confirmación de compra
     function goToConfirm() {
         setPayment({ number: numTarInput.value, validate: valHastaInput.value, name: nomApeTarInput.value, docType: docTypeInput.value, docNum: docNumInput.value });
         next();
     }
 
+    // Listado de items del carrito (Paso 1)
     function cartList() {
         return cart.map((item) => {
             function remove() {
@@ -119,12 +130,12 @@ function Cart() {
             return <>
                 <li className="list-group-item" key={ item.item.id }>
                     <div className="row">
-                        <div className="col-md-3 text-left">
-                            <img className="img-fluid" src={ item.item.pictureUrl }/>
+                        <div className="col-md-3 d-flex align-items-center justify-content-center">
+                            <img alt="Imagen del producto" className="img-fluid" style={{ maxHeight: "150px" }} src={ item.item.pictureUrl }/>
                         </div>
                         <div className="col-md-6">
-                            <h1 className="text-left">{ item.item.title }</h1>
-                            <p className="text-left">{ item.item.description }</p>
+                            <h4 className="text-left">{ item.item.title }</h4>
+                            {/* <p className="text-left">{ item.item.description }</p> */}
                         </div>
                         <div className="col-md-3">
                             <p className="text-left">Cantidad: { item.quantity }</p>
@@ -138,6 +149,7 @@ function Cart() {
         });
     }
 
+    // Contenedor del istado de items del carrito (Paso 1)
     function loadCart() {
         return (
             <>
@@ -156,21 +168,29 @@ function Cart() {
         )
     }
 
+    // Formulario de datos personales del comprador (Paso 2)
     function loadPersonal() {
+        let disabled = nameInput.value === '' || lastInput.value === '' || phoneInput.value === '' || mailInput.value === '' || mailInput.value !== mailConfirmInput.value;
         return(
             <>
                 <h1 style={{ marginTop:"20px" }}>Datos personales</h1>
                 <div className="row">
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                         <div className="form-group">
                             <label htmlFor="name">Nombre</label>
                             <input type="text" className="form-control" id="name" { ...nameInput } />
                         </div>
                     </div>
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                         <div className="form-group">
                             <label htmlFor="lastname">Apellido</label>
                             <input type="text" className="form-control" id="lastname" { ...lastInput } />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="form-group">
+                            <label htmlFor="phone">Teléfono</label>
+                            <input type="text" className="form-control" id="phone" { ...phoneInput } />
                         </div>
                     </div>
                 </div>
@@ -183,16 +203,17 @@ function Cart() {
                     </div>
                     <div className="col-md-6">
                         <div className="form-group">
-                            <label htmlFor="phone">Teléfono</label>
-                            <input type="text" className="form-control" id="phone" { ...phoneInput } />
+                            <label htmlFor="mailConfirm">Confirmar mail</label>
+                            <input type="text" className="form-control" id="mailConfirm" { ...mailConfirmInput } />
                         </div>
                     </div>
                 </div>
-                <button className="btn btn-primary" onClick={goToPayment}>Continuar</button>
+                <button className="btn btn-primary" disabled={disabled} onClick={goToPayment}>Continuar</button>
             </>
         )
     }
 
+    // Formulario de datos de pago (Paso 3)
     function loadPayment() {
         return(
             <>
@@ -223,7 +244,7 @@ function Cart() {
                             {/* <input type="text" className="form-control" id="docType" { ...docTypeInput } /> */}
                             <div className="form-group">
                                 <label htmlFor="docType">Tipo</label>
-                                <select className="form-control" id="docType" { ...docTypeInput }>
+                                <select className="form-control" id="docType" { ...docTypeInput } value="DNI">
                                     <option>DNI</option>
                                     <option>DNI Ext</option>
                                     <option>LC</option>
@@ -244,6 +265,7 @@ function Cart() {
         )
     }
 
+    // Se muestran los datos cargados para que el usuario confirme la compra (Paso 4)
     function loadConfirm() {
         return(
             <>
@@ -298,6 +320,7 @@ function Cart() {
         )
     }
 
+    // Se muestra el ID de la orden generada (Paso 5)
     function loadFinish() {
         return(
             <>
@@ -313,8 +336,9 @@ function Cart() {
         <>
             <div className="container" style={{ marginTop:"10px" }}>
                 { cart.length === 0 && !finishOrder ? <>
-                    <h2>No hay productos</h2> 
-                    <Link to={'/'}><button className="btn btn-success">Home</button></Link>
+                    <div style={{ marginTop:"40px" }} className="container">
+                        <NotFound error="No hay productos" />
+                    </div>
                 </> : <>
                     <div className="bs-stepper">
                         <div className="bs-stepper-header" role="tablist">

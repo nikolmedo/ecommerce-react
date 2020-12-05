@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useValueContext } from '../context/cartContext';
 import ItemCount from './ItemCount';
@@ -19,11 +19,13 @@ function ItemDetail({ item={} }) {
                     <div className="row">
                         <div className="col-md-8">
                             <h1 className="text-left">{ item.title }</h1>
+                            <hr/>
                             <p className="text-left">{ item.description }</p>
                         </div>
                         <div className="col-md-4">
-                            <img className="img-fluid" src={ item.pictureUrl }/><br/>
-                            { !buying ? <ItemCount stock={ item.stock } initial="2" onAdd={add} /> : 
+                            <img alt="Imagen del producto" className="img-fluid" src={ item.pictureUrl }/><br/>
+                            <h4 className="text-center text-muted">$ { item.price }</h4>
+                            { !buying ? <ItemCount stock={ item.stock } initial="1" onAdd={add} /> : 
                             <>
                                 <Link style={{textDecoration:"none"}} to={'/cart'}><button type="button" className="btn btn-success">Terminar compra</button></Link>
                             </>}
