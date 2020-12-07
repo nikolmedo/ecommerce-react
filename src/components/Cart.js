@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useValueContext } from '../context/cartContext';
 import { getFirestore } from '../firebase';
 import firebase from 'firebase/app';
@@ -7,6 +6,11 @@ import Stepper from 'bs-stepper';
 import 'bs-stepper/dist/css/bs-stepper.min.css';
 import { useEffect } from 'react';
 import NotFound from './NotFound';
+import StepPersonalData from './StepPersonalData';
+import StepPayment from './StepPayment';
+import StepConfirm from './StepConfirm';
+import StepFinish from './StepFinish';
+import StepCartInfo from './StepCartInfo';
 
 function useTextInput({ defaultValue, extras }) {
     const [input, setInput] = useState(defaultValue);
@@ -68,7 +72,7 @@ function Cart() {
         extras: { placeholder: "Nombre y apellido" }
     });
     const docTypeInput = useTextInput({
-        defaultValue: "",
+        defaultValue: "DNI",
         extras: { placeholder: "Tipo" }
     });
     const docNumInput = useTextInput({
@@ -86,6 +90,9 @@ function Cart() {
 
     // Funcion que crea la orden en Firebase (paso final)
     async function createOrder() {
+        cart.map((item) => {
+            total += Number(item.item.price)*Number(item.quantity);
+        });
         newOrder.items = cart.map((item) => ({ id: item.item.id, title: item.item.title, description: item.item.description, price: item.item.price, quantity: Number(item.quantity) }));
         newOrder.total = total;
         newOrder.payment = payment;
@@ -118,218 +125,6 @@ function Cart() {
     function goToConfirm() {
         setPayment({ number: numTarInput.value, validate: valHastaInput.value, name: nomApeTarInput.value, docType: docTypeInput.value, docNum: docNumInput.value });
         next();
-    }
-
-    // Listado de items del carrito (Paso 1)
-    function cartList() {
-        return cart.map((item) => {
-            function remove() {
-                removeItem(item.item.id);
-            }
-            total += Number(item.item.price)*Number(item.quantity);
-            return <>
-                <li className="list-group-item" key={ item.item.id }>
-                    <div className="row">
-                        <div className="col-md-3 d-flex align-items-center justify-content-center">
-                            <img alt="Imagen del producto" className="img-fluid" style={{ maxHeight: "150px" }} src={ item.item.pictureUrl }/>
-                        </div>
-                        <div className="col-md-6">
-                            <h4 className="text-left">{ item.item.title }</h4>
-                            {/* <p className="text-left">{ item.item.description }</p> */}
-                        </div>
-                        <div className="col-md-3">
-                            <p className="text-left">Cantidad: { item.quantity }</p>
-                            <p className="text-left">Precio unidad: ${ item.item.price }</p>
-                            <p className="text-left">Precio total: ${ Number(item.item.price)*Number(item.quantity) }</p>
-                            <button className="btn btn-danger" onClick={remove}>Eliminar</button>
-                        </div>
-                    </div>
-                </li>
-            </>
-        });
-    }
-
-    // Contenedor del istado de items del carrito (Paso 1)
-    function loadCart() {
-        return (
-            <>
-                <h1 style={{ marginTop:"20px" }}>Carrito</h1>
-                <ul className="list-group">
-                    { cartList() }
-                    <li className="list-group-item active text-right">Precio total ${ total }</li>
-                </ul>
-                <br/>
-                <div className="row">
-                    <div className="col-md-3 offset-md-9 text-right">
-                        <button onClick={next} className="btn btn-success align-self-end">Continuar compra</button>
-                    </div>
-                </div>
-            </>
-        )
-    }
-
-    // Formulario de datos personales del comprador (Paso 2)
-    function loadPersonal() {
-        let disabled = nameInput.value === '' || lastInput.value === '' || phoneInput.value === '' || mailInput.value === '' || mailInput.value !== mailConfirmInput.value;
-        return(
-            <>
-                <h1 style={{ marginTop:"20px" }}>Datos personales</h1>
-                <div className="row">
-                    <div className="col-md-4">
-                        <div className="form-group">
-                            <label htmlFor="name">Nombre</label>
-                            <input type="text" className="form-control" id="name" { ...nameInput } />
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="form-group">
-                            <label htmlFor="lastname">Apellido</label>
-                            <input type="text" className="form-control" id="lastname" { ...lastInput } />
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="form-group">
-                            <label htmlFor="phone">Teléfono</label>
-                            <input type="text" className="form-control" id="phone" { ...phoneInput } />
-                        </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="form-group">
-                            <label htmlFor="mail">Mail</label>
-                            <input type="text" className="form-control" id="mail" { ...mailInput } />
-                        </div>
-                    </div>
-                    <div className="col-md-6">
-                        <div className="form-group">
-                            <label htmlFor="mailConfirm">Confirmar mail</label>
-                            <input type="text" className="form-control" id="mailConfirm" { ...mailConfirmInput } />
-                        </div>
-                    </div>
-                </div>
-                <button className="btn btn-primary" disabled={disabled} onClick={goToPayment}>Continuar</button>
-            </>
-        )
-    }
-
-    // Formulario de datos de pago (Paso 3)
-    function loadPayment() {
-        return(
-            <>
-                <h1 style={{ marginTop:"20px" }}>Datos de pago</h1>
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="form-group">
-                            <label htmlFor="numTar">Número de tarjeta</label>
-                            <input type="text" className="form-control" id="numTar" { ...numTarInput } />
-                        </div>
-                    </div>
-                    <div className="col-md-6">
-                        <div className="form-group">
-                            <label htmlFor="valHasta">Válida hasta</label>
-                            <input type="text" className="form-control" id="valHasta" { ...valHastaInput } />
-                        </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="form-group">
-                            <label htmlFor="nomApeTar">Nombre y apellido impreso en la tarjeta</label>
-                            <input type="text" className="form-control" id="nomApeTar" { ...nomApeTarInput } />
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="form-group">
-                            {/* <input type="text" className="form-control" id="docType" { ...docTypeInput } /> */}
-                            <div className="form-group">
-                                <label htmlFor="docType">Tipo</label>
-                                <select className="form-control" id="docType" { ...docTypeInput } value="DNI">
-                                    <option>DNI</option>
-                                    <option>DNI Ext</option>
-                                    <option>LC</option>
-                                    <option>LE</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="form-group">
-                            <label htmlFor="docNum">Documento</label>
-                            <input type="text" className="form-control" id="docNum" { ...docNumInput } />
-                        </div>
-                    </div>
-                </div>
-                <button className="btn btn-primary" onClick={goToConfirm}>Continuar</button>
-            </>
-        )
-    }
-
-    // Se muestran los datos cargados para que el usuario confirme la compra (Paso 4)
-    function loadConfirm() {
-        return(
-            <>
-                <h1 style={{ marginTop:"20px" }}>Confirmar compra</h1>
-                <br/>
-                <div className="card">
-                    <div className="card-body">
-                        <h5 className="card-title">Datos comprador</h5>
-                        <div className="row">
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Nombre</span>: { buyer.name }</div>
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Apellido:</span> { buyer.last }</div>
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Telefono:</span> { buyer.phone }</div>
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Mail:</span> { buyer.email }</div>
-                        </div>
-                    </div>
-                </div>
-                <br/>
-                <div className="card">
-                    <div className="card-body">
-                        <h5 className="card-title">Datos tarjeta</h5>
-                        <div className="row">
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Número:</span> { payment.number }</div>
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Válido hasta:</span> { payment.validate }</div>
-                        </div>
-                        <div className="row">
-                            <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Nombre:</span> { payment.name }</div>
-                            <div className="col-md-3 text-left"><span className="font-weight-bold text-muted">Tipo:</span> { payment.docType }</div>
-                            <div className="col-md-3 text-left"><span className="font-weight-bold text-muted">Documento:</span> { payment.docNum }</div>
-                        </div>
-                    </div>
-                </div>
-                <br/>
-                <div className="card">
-                    <div className="card-body">
-                        <h5 className="card-title">Productos</h5>
-                        {cart.map((item) => (
-                            <>
-                                <div className="row">
-                                    <div className="col-md-6 text-left"><span className="font-weight-bold text-muted">Producto:</span> { item.item.title }</div>
-                                    <div className="col-md-6 text-right"><span className="font-weight-bold text-muted"><span className="font-weight-bold text-muted">Cantidad:</span> { item.quantity } - Precio unitario:</span> ${ item.item.price }</div>
-                                </div>
-                            </>
-                        ))}
-                        <div className="row">
-                            <div className="col-md-12 text-right"><span className="font-weight-bold text-muted">Total a pagar:</span> <span className="font-weight-bold">${ total }</span></div>
-                        </div>
-                    </div>
-                </div>
-                <br/>
-                <button className="btn btn-primary" onClick={createOrder}>Confirmar</button>
-            </>
-        )
-    }
-
-    // Se muestra el ID de la orden generada (Paso 5)
-    function loadFinish() {
-        return(
-            <>
-            <div className="alert alert-success" role="alert">
-                ¡Compra realizada con éxito!<br/>
-                <span className="font-weight-bold text-muted">Su ID de compra es:</span> { orderId }
-            </div>
-            </>
-        );
     }
 
     return (
@@ -378,11 +173,21 @@ function Cart() {
                             </div>
                         </div>
                         <div className="bs-stepper-content">
-                            <div id="products-part" className="content" role="tabpanel" aria-labelledby="products-part-trigger">{ loadCart() }</div>
-                            <div id="personal-part" className="content" role="tabpanel" aria-labelledby="personal-part-trigger">{ loadPersonal() }</div>
-                            <div id="payment-part" className="content" role="tabpanel" aria-labelledby="payment-part-trigger">{ loadPayment() }</div>
-                            <div id="confirm-part" className="content" role="tabpanel" aria-labelledby="confirm-part-trigger">{ loadConfirm() }</div>
-                            <div id="finish-part" className="content" role="tabpanel" aria-labelledby="finish-part-trigger">{ loadFinish() }</div>
+                            <div id="products-part" className="content" role="tabpanel" aria-labelledby="products-part-trigger">
+                                <StepCartInfo nextStep={next} removeItem={removeItem} cart={cart} />
+                            </div>
+                            <div id="personal-part" className="content" role="tabpanel" aria-labelledby="personal-part-trigger">
+                                <StepPersonalData nextStep={goToPayment} nameInput={nameInput} lastInput={lastInput} phoneInput={phoneInput} mailInput={mailInput} mailConfirmInput={mailConfirmInput} />
+                            </div>
+                            <div id="payment-part" className="content" role="tabpanel" aria-labelledby="payment-part-trigger">
+                                <StepPayment nextStep={goToConfirm} numTarInput={numTarInput} valHastaInput={valHastaInput} nomApeTarInput={nomApeTarInput} docTypeInput={docTypeInput} docNumInput={docNumInput} />
+                            </div>
+                            <div id="confirm-part" className="content" role="tabpanel" aria-labelledby="confirm-part-trigger">
+                                <StepConfirm nextStep={createOrder} buyer={buyer} payment={payment} cart={cart} />
+                            </div>
+                            <div id="finish-part" className="content" role="tabpanel" aria-labelledby="finish-part-trigger">
+                                <StepFinish orderId={orderId} />
+                            </div>
                         </div>
                     </div>
                 </>}

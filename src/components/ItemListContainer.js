@@ -3,14 +3,41 @@ import { useParams } from 'react-router-dom';
 import { getFirestore } from '../firebase';
 import ItemList from './ItemList';
 import Loader from './Loader';
+import NotFound from './NotFound';
 
 function ItemListContainer({ title }) {
+  const { idCategory } = useParams();
+  const [productos, setProductos] = useState();
+  const [showLoading, setShowLoading] = useState(true);
+  const [noResult, setNoResult] = useState(false);
+  const [categoryNotFound, setCategoryNotFound] = useState(false);
+
   useEffect(() => {
+    setCategoryNotFound(false);
+    setShowLoading(true);
+    
     const db = getFirestore();
-    let itemCollection = db.collection("items");
+    let itemCollection;
+    // Si viene de /category/:idCategory filtra los items que sean de esa cateogoria
     if (idCategory !== undefined) {
-      itemCollection = db.collection("items").where("idCategory", "==", idCategory);
+      let categoryCollection = db.collection("category").where("key", "==", idCategory);
+      categoryCollection.get().then((querySnapshot) => {
+        if(querySnapshot.size === 0) {
+          setCategoryNotFound(true);
+          setShowLoading(false);
+        } else {
+          itemCollection = db.collection("items").where("idCategory", "==", querySnapshot.docs[0].id);
+          getItems(itemCollection);
+        }
+      })
+    // Si viene de la home, muestra todos los productos
+    } else {
+      itemCollection = db.collection("items");
+      getItems(itemCollection);
     }
+  }, [idCategory]);
+
+  function getItems(itemCollection) {
     itemCollection.get().then((querySnapshot) => {
       if(querySnapshot.size === 0) {
         console.log('No hay resultados');
@@ -23,21 +50,18 @@ function ItemListContainer({ title }) {
       )
       setShowLoading(false);
     });
-  });
-  const [productos, setProductos] = useState();
-  const [showLoading, setShowLoading] = useState(true);
-  const [noResult, setNoResult] = useState(false);
-  const { idCategory } = useParams();
+  }
+
   if (noResult) {
     return ( 
-    <div className="container">
-      <div className="page-header">
-        <h1>
-          No se encontraron productos en esta categoria
-        </h1>
-      </div>
-    </div>);
+      <NotFound error={"No se encontraron productos para la categoría"} />
+    );
+  } else if (categoryNotFound) {
+    return (
+      <NotFound error={"No se encontró la categoría"} />
+    );
   }
+
   return (
       <>
         <Loader isLoading={showLoading} />

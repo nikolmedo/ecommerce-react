@@ -22,7 +22,7 @@ function NavBar() {
       const [categories, setCategories] = useState([]);
       
       function getCategories() {
-        return categories.map((category) => <Link key={ category.id } className="dropdown-item" to={ '/category/' + category.id }>{category.titulo}</Link>);
+        return categories.map((category) => <Link key={ category.id } className="dropdown-item" to={ '/category/' + category.key }>{category.titulo}</Link>);
       }
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
